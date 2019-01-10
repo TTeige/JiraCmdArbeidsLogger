@@ -1,5 +1,5 @@
 from cmd import Cmd
-from timerModule import TimerModule
+from timerModule import TimerModule, format_time_to_string
 from issueModule import IssueModule
 from workLogModule import WorkLogModule
 import sys
@@ -16,9 +16,10 @@ class Main(Cmd):
     def preloop(self):
         print("")
         self.do_get_issues("")
+        print("")
 
     def run(self):
-        self.cmdloop("enter something, unsure? try help")
+        self.cmdloop("To show available commands use <help>\n")
 
     def do_exit(self, args):
         return True
@@ -39,7 +40,7 @@ class Main(Cmd):
             self.time_spent_on_issue[current_issue] += time_spent
         else:
             self.time_spent_on_issue[current_issue] = time_spent
-        self.work_log_module.log_work(current_issue, comment, time_spent, start_time)
+        self.work_log_module.log_work(current_issue.key, comment, time_spent, start_time)
 
     def emptyline(self):
         pass
@@ -49,6 +50,7 @@ class Main(Cmd):
 
     def do_get_issues(self, a):
         self.issue_module.get_issues()
+        print("Downloaded issues from %s" % self.issue_module.jira_url)
 
     def do_set_active_issue(self, issue):
         self.issue_module.set_active_issue(issue)
@@ -66,10 +68,19 @@ class Main(Cmd):
             for k, v in self.time_spent_on_issue.items():
                 print(k + "\t", v)
 
+    def do_show_work_log(self, a):
+        log = self.work_log_module.get_work_log()
+        for k, v in log.items():
+            print("")
+            print("\t" + k)
+            for entry in v:
+                print("Time spent during session %s\nComment: %s" % (format_time_to_string(entry.time_spent), entry.comment))
+        print("")
+
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print("Enter username and password")
     else:
-        m = Main(sys.argv[0], sys.argv[1])
+        m = Main(sys.argv[1], sys.argv[2])
         m.run()

@@ -1,4 +1,5 @@
 import time
+import math
 from multiprocessing.pool import ThreadPool
 
 
@@ -48,3 +49,10 @@ class TimerModule:
                           flush=True)
         print("\n")
         return start_time, time.time() - start_time
+
+
+def format_time_to_string(seconds):
+    hour = math.floor(seconds / 3600)
+    mins = math.floor(seconds / 360)
+    seconds % 60
+    return "%dh %dm %s" % (hour, mins, seconds)

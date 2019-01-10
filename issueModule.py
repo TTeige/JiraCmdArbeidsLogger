@@ -35,7 +35,6 @@ class IssueModule:
         for issue in response.json()["issues"]:
             self.issues_key[issue["key"]] = Issue(issue)
             self.issues_id[issue["id"]] = Issue(issue)
-        print("Updated issues")
 
     def list_issues(self):
         for index, issue in self.issues_key.items():
