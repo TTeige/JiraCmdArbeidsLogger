@@ -3,6 +3,7 @@ from timerModule import TimerModule, format_time_to_string
 from issueModule import IssueModule
 from workLogModule import WorkLogModule
 import sys
+import datetime
 
 
 class Main(Cmd):
@@ -11,7 +12,7 @@ class Main(Cmd):
         self.time_spent_on_issue = {}
         self.timer_module = TimerModule()
         self.issue_module = IssueModule("https://jira.adeo.no/rest/api/2/", usr, pw)
-        self.work_log_module = WorkLogModule()
+        self.work_log_module = WorkLogModule("https://jira.adeo.no/rest/api/2/", usr, pw)
 
     def preloop(self):
         print("")
@@ -40,7 +41,8 @@ class Main(Cmd):
             self.time_spent_on_issue[current_issue] += time_spent
         else:
             self.time_spent_on_issue[current_issue] = time_spent
-        self.work_log_module.log_work(current_issue.key, comment, time_spent, start_time)
+        self.work_log_module.log_work(current_issue.key, comment, time_spent,
+                                      datetime.datetime.now().isoformat() + "+0000")
 
     def emptyline(self):
         pass
@@ -68,13 +70,19 @@ class Main(Cmd):
             for k, v in self.time_spent_on_issue.items():
                 print(k + "\t", v)
 
-    def do_show_work_log(self, a):
+    def do_show_work_log(self, issue_key):
+
         log = self.work_log_module.get_work_log()
+
+        if issue_key != "":
+            log = self.work_log_module.get_work_log_on_issue(issue_key)
+
         for k, v in log.items():
             print("")
             print("\t" + k)
             for entry in v:
-                print("Time spent during session %s\nComment: %s" % (format_time_to_string(entry.time_spent), entry.comment))
+                print("Started on: %s\nTime spent during session %s\nComment: %s" % (
+                    entry.date_started, format_time_to_string(entry.time_spent), entry.comment))
         print("")
 
 

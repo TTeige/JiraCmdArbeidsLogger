@@ -1,4 +1,7 @@
 import json
+import requests
+from requests.auth import HTTPBasicAuth
+
 
 
 class Singleton(type):
@@ -21,23 +24,25 @@ class WorkLogIdIncrementer(metaclass=Singleton):
 
 
 class WorkLogEntry():
-    def __init__(self, comment, time_spent, time_started):
+    def __init__(self, comment, time_spent, date_started):
         self.id_generator = WorkLogIdIncrementer()
         self.log_id = self.id_generator.get_id()
         self.comment = comment
         self.time_spent = time_spent
-        self.time_started = time_started
+        self.date_started = date_started
 
 
 class WorkLogModule:
-    def __init__(self):
+    def __init__(self, jira_url, usr, pw):
         self.work_log = {}
+        self.url = jira_url
+        self.auth = HTTPBasicAuth(usr, pw)
 
-    def log_work(self, issue_key, comment, time_spent, time_started):
+    def log_work(self, issue_key, comment, time_spent, date_started):
         if issue_key in self.work_log:
-            self.work_log[issue_key].append(WorkLogEntry(comment, time_spent, time_started))
+            self.work_log[issue_key].append(WorkLogEntry(comment, time_spent, date_started))
         else:
-            self.work_log[issue_key] = [WorkLogEntry(comment, time_spent, time_started)]
+            self.work_log[issue_key] = [WorkLogEntry(comment, time_spent, date_started)]
 
     def get_work_log(self):
         return self.work_log
@@ -49,27 +54,42 @@ class WorkLogModule:
             print("No work log found for issue %s" % issue_key)
 
     def push_work_log(self):
-        for key, val in self.work_log.items():
-            payload = json.dumps({
-                "comment": {
-                    "type": "doc",
-                    "version": 1,
-                    "content": [
-                        {
-                            "type": "paragraph",
+
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+
+        for key, list_for_issue in self.work_log.items():
+            for entry in list_for_issue:
+                payload = json.dumps({
+                    "comment": "",
+                    "started": entry.date_started,
+                    "timeSpentSeconds": entry.time_spent
+                })
+                if entry.comment != "":
+                    payload = json.dumps({
+                        "comment": {
+                            "type": "doc",
+                            "version": 1,
                             "content": [
                                 {
-                                    "type": "text",
-                                    "text": val.comment
+                                    "type": "paragraph",
+                                    "content": [
+                                        {
+                                            "type": "text",
+                                            "text": entry.comment
+                                        }
+                                    ]
                                 }
                             ]
-                        }
-                    ]
-                },
-                "visibility": {
-                    "type": "group",
-                    "value": "jira-developers"
-                },
-                "started": val.time_started,
-                "timeSpentSeconds": val.time_spent
-            })
+                        },
+                        "started": entry.date_started,
+                        "timeSpentSeconds": entry.time_spent
+                    })
+                print(payload)
+                resp = requests.post(self.url + "issue/%s/worklog" % key, auth=self.auth, headers=headers, data=payload)
+                if resp.status_code == 200:
+                    print("Work log pushed")
+                else:
+                    print(resp.status_code, resp.content)

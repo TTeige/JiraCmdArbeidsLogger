@@ -53,6 +53,6 @@ class TimerModule:
 
 def format_time_to_string(seconds):
     hour = math.floor(seconds / 3600)
-    mins = math.floor(seconds / 360)
-    seconds % 60
-    return "%dh %dm %s" % (hour, mins, seconds)
+    minutes = math.floor(seconds / 360)
+    sec = round(seconds % 60)
+    return "%dh %dm %ss" % (hour, minutes, sec)
