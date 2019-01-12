@@ -32,7 +32,8 @@ class Main(Cmd):
             return
         self.timer_module.start(should_print)
 
-    def help_start(self):
+    @staticmethod
+    def help_start():
         print("Starts a timer on the active issue")
 
     def do_end(self, comment):
@@ -48,7 +49,8 @@ class Main(Cmd):
         self.work_log_module.log_work(current_issue.key, comment, time_spent,
                                       datetime.datetime.now().isoformat() + "+0000")
 
-    def help_end(self):
+    @staticmethod
+    def help_end():
         print("Ends the timer for the active issue. A comment for the work log can be provided here.")
         print("Example: end put your comment after the end command")
 
@@ -58,20 +60,23 @@ class Main(Cmd):
     def do_list_issues(self, a):
         self.issue_module.list_issues()
 
-    def help_list_issues(self):
+    @staticmethod
+    def help_list_issues():
         print("Lists the issues related to your user")
 
     def do_get_issues(self, a):
         self.issue_module.get_issues()
         print("Downloaded issues from %s" % self.issue_module.jira_url)
 
-    def help_get_issues(self):
+    @staticmethod
+    def help_get_issues():
         print("Gets the issues from jira related to your user")
 
     def do_set_active_issue(self, issue):
         self.issue_module.set_active_issue(issue)
 
-    def help_set_active_issue(self):
+    @staticmethod
+    def help_set_active_issue():
         print("Sets the active issue where the value is the key in jira")
         print("Example: set_active_issue XXX-1234")
         print("This must be provided to start a timer")
@@ -79,13 +84,15 @@ class Main(Cmd):
     def do_commit_work(self, a):
         self.work_log_module.push_work_log()
 
-    def help_commit_work(self):
+    @staticmethod
+    def help_commit_work():
         print("Pushes the work logs to jira")
 
     def do_show_active(self, a):
         self.issue_module.show_active_issue()
 
-    def help_show_active(self):
+    @staticmethod
+    def help_show_active():
         print("Shows the currently active issue")
 
     def do_show_time_spent(self, issue_key):
@@ -95,7 +102,8 @@ class Main(Cmd):
             for k, v in self.time_spent_on_issue.items():
                 print(k + "\t", v)
 
-    def help_show_time_spent(self):
+    @staticmethod
+    def help_show_time_spent():
         print("Show how much time has been logged on the different issues for this session")
         print("An issue key can be provided to display the time spent on a single issue")
 
@@ -114,7 +122,8 @@ class Main(Cmd):
                     entry.date_started, format_time_to_string(entry.time_spent), entry.comment))
         print("")
 
-    def help_show_work_log(self):
+    @staticmethod
+    def help_show_work_log():
         print("Show the work log for all issues for this session, or for a single issues if an issue key is provided")
 
 
