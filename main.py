@@ -1,9 +1,10 @@
-from cmd import Cmd
-from timerModule import TimerModule, format_time_to_string
-from issueModule import IssueModule
-from workLogModule import WorkLogModule
-import sys
 import datetime
+import sys
+from cmd import Cmd
+
+from issueModule import IssueModule
+from timerModule import TimerModule, format_time_to_string
+from workLogModule import WorkLogModule
 
 
 class Main(Cmd):
@@ -31,6 +32,9 @@ class Main(Cmd):
             return
         self.timer_module.start(should_print)
 
+    def help_start(self):
+        print("Starts a timer on the active issue")
+
     def do_end(self, comment):
         current_issue = self.issue_module.get_active_issue()
         if current_issue is None:
@@ -44,24 +48,45 @@ class Main(Cmd):
         self.work_log_module.log_work(current_issue.key, comment, time_spent,
                                       datetime.datetime.now().isoformat() + "+0000")
 
+    def help_end(self):
+        print("Ends the timer for the active issue. A comment for the work log can be provided here.")
+        print("Example: end put your comment after the end command")
+
     def emptyline(self):
         pass
 
     def do_list_issues(self, a):
         self.issue_module.list_issues()
 
+    def help_list_issues(self):
+        print("Lists the issues related to your user")
+
     def do_get_issues(self, a):
         self.issue_module.get_issues()
         print("Downloaded issues from %s" % self.issue_module.jira_url)
 
+    def help_get_issues(self):
+        print("Gets the issues from jira related to your user")
+
     def do_set_active_issue(self, issue):
         self.issue_module.set_active_issue(issue)
+
+    def help_set_active_issue(self):
+        print("Sets the active issue where the value is the key in jira")
+        print("Example: set_active_issue XXX-1234")
+        print("This must be provided to start a timer")
 
     def do_commit_work(self, a):
         self.work_log_module.push_work_log()
 
+    def help_commit_work(self):
+        print("Pushes the work logs to jira")
+
     def do_show_active(self, a):
         self.issue_module.show_active_issue()
+
+    def help_show_active(self):
+        print("Shows the currently active issue")
 
     def do_show_time_spent(self, issue_key):
         if issue_key != "":
@@ -69,6 +94,10 @@ class Main(Cmd):
         else:
             for k, v in self.time_spent_on_issue.items():
                 print(k + "\t", v)
+
+    def help_show_time_spent(self):
+        print("Show how much time has been logged on the different issues for this session")
+        print("An issue key can be provided to display the time spent on a single issue")
 
     def do_show_work_log(self, issue_key):
 
@@ -84,6 +113,9 @@ class Main(Cmd):
                 print("Started on: %s\nTime spent during session %s\nComment: %s" % (
                     entry.date_started, format_time_to_string(entry.time_spent), entry.comment))
         print("")
+
+    def help_show_work_log(self):
+        print("Show the work log for all issues for this session, or for a single issues if an issue key is provided")
 
 
 if __name__ == '__main__':
